@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="app.css">
+
+  <title>Movietime Cinemas Villa el Salvador Unicachi</title>
+  
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <router-view></router-view>
+    </div>
+
+    <div class="d-none" type="text/x-template" id="movie-row-tpl">
+      <div>
+        <div class="movie-row">
+          <div class="row clearfix">
+            <div class="col-12">
+              <h4>
+                <i class="glyphicon glyphicon-asterisk" v-if="funcion.numerado == 'P'"></i>
+                <router-link tag="a" :to="{
+                  name: 'mapa',
+                  params: {
+                    id: funcion.funcion_id
+                  }
+                }">
+                  {{ funcion.nombre_pelicula }}
+                </router-link>
+              </h4>
+              <ul class="list-unstyled">
+                <li>
+                  <strong>Sala:</strong> <span>{{ funcion.sala }}</span>
+                </li>
+                <li>
+                  <strong>Fecha:</strong> <span>{{ funcion.fecha | fecha_humana }}</span>
+                </li>
+                <li>
+                  <strong>Hora:</strong> <span>{{ funcion.hora | hora_numerica }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-none" id="mapa-tpl">
+      <div>
+        <div class="row clearfix pt-4 pb-2 mb-2 border-bottom">
+          <div class="col-auto">
+            <router-link tag="a" :to="{ name: 'home' }">
+            &laquo; Volver
+            </router-link>
+          </div>
+          <div class="col text-center">
+            <img src="logo.png" alt="Movietime" class="img-responsive center-block" />
+          </div>
+        </div>
+        <div v-if="!sala.funcion_id">
+          Cargando...
+        </div>
+        <div v-else>
+          <h3>{{ sala.nombre_pelicula }}</h3>
+          <div>
+            <strong>Fecha:</strong> {{ sala.fecha | fecha_humana }}
+          </div>
+          <div>
+            <strong>Sala:</strong> {{ sala.sala }}
+          </div>
+          <div>
+            <strong>Sala:</strong> {{ sala.hora | hora_numerica }}
+          </div>
+          <div class="bg-light pt-0 pb-2 px-2" id="map-canvas">
+            <div class="text-center d-flex justify-content-center">
+              <div class="cinema-screen d-flex align-items-center m-0 text-center mb-2 d-inline">
+                <h4 class="bg-secondary text-white align-self-stretch flex-fill m-0 p-0 d-flex align-items-center justify-content-center">Pantalla</h4>
+              </div>
+            </div>
+            <div class="d-flex justify-content-center">
+              <div class="seats-container">
+                <div
+                  v-for="(col, cdx) in columnas"
+                  class="d-flex">
+                  <map-item 
+                    @select="toggle"
+                    :key="(col+row)" 
+                    v-for="(row, rdx) in filas"
+                    :ocupado="ocupados[col+row]"
+                    :seleccionado="seleccionados[col+row]"
+                    :asiento="mapa_hash[col][row]" 
+                    :fixed="true"
+                    />
+                </div>
+              </div>
+            </div>
+            <div class="row clearfix justify-content-center mt-4">
+              <div class="col-auto d-flex text-center">
+                <div class="mx-1">
+                  <map-item 
+                    :padded="true"
+                    :ocupado="false"
+                    :seleccionado="false"
+                    :icon="true"
+                    :asiento="{
+                      tipo: '',
+                      nombre_mostrar: 'Disponible'
+                    }"></map-item>
+                </div>
+                <div class="mx-1">
+                  <map-item 
+                    :padded="true"
+                    :ocupado="false"
+                    :seleccionado="false"
+                    :icon="true"
+                    :asiento="{
+                      tipo: 'S',
+                      nombre_mostrar: 'Silla de Ruedas'
+                    }"></map-item>
+                </div>
+                <div class="mx-1">
+                  <map-item 
+                    :padded="true"
+                    :ocupado="true"
+                    :seleccionado="false"
+                    :icon="true"
+                    :asiento="{
+                      nombre_mostrar: 'Ocupado'
+                    }"></map-item>
+                </div>
+                <div class="mx-1">
+                  <map-item 
+                    :padded="true"
+                    :ocupado="false"
+                    :seleccionado="true"
+                    :icon="true"
+                    :asiento="{
+                      nombre_mostrar: 'Seleccionado'
+                    }"></map-item>
+                </div>
+              </div>
+            </div>
+            <div class="row clearfix">
+              <div class="col-12">
+                <strong>Asientos Seleccionados:</strong>
+              </div>
+              <div class="col-12">
+                <div class="d-flex">
+                  <map-item 
+                    @select="toggle"
+                    :key="idx" 
+                    v-for="(cell, idx) in selectedCells"
+                    :seleccionado="true"
+                    :asiento="cell" 
+                    :fixed="true"
+                    />
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-none" id="item-tpl">
+      <div 
+        @click="handle"
+        class="seat no-select cursor-pointer" 
+        :class="{
+          'bg-warning border seat-silla-ruedas': es_silla_ruedas,
+          'p-1': padded,
+          'seat-fixed': fixed,
+          'seat-pasillo': es_pasillo,
+          'bg-secondary text-white seat-ocupado border': ocupado,
+          'bg-success text-white seat-seleccionado border': seleccionado,
+          'seat-no-disponible': es_no_disponible,
+          'seat-usable border': es_usable,
+        }"
+        >
+          <svg v-if="show_icon" width="18" height="18" viewBox="0 0 24 24">
+            <defs><path id="a" d="M0 0h24v24H0V0z"/></defs>
+            <clipPath id="b">
+              <use xlink:href="#a" overflow="visible"/>
+            </clipPath>
+            <path d="M4 18v3h3v-3h10v3h3v-6H4zm15-8h3v3h-3zM2 10h3v3H2zm15 3H7V5c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2v8z" clip-path="url(#b)"/>
+          </svg>
+          <strong v-html="label"></strong>
+        </div>
+    </div>
+
+    <div class="d-none" id="index-tpl">
+      <div>
+        <div class="row clearfix pt-4 pb-2 mb-2 border-bottom">
+          <div class="col-12 col-sm-auto">
+            <img src="logo.png" alt="Movietime" class="img-responsive center-block" />
+          </div>
+          <div class="col-12 col-sm align-items-center d-flex">
+            <h3 class="m-0">Estrenos</h3>
+          </div>
+        </div>
+        <div v-if="!peliculas">
+          Cargando...
+        </div>
+        <div v-else class="row clearfix pt-4 pb-2">
+          <div class="col-12 col-sm-auto border-right">
+            <div class="input-group mb-2 mr-sm-2">
+              <input type="search" name="search" class="form-control" placeholder="Buscar...">
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary" @click="buscar" type="button">
+                  B
+                </button>
+              </div>
+            </div>
+
+          </div>
+          <div class="col-12 col-sm">
+            <div v-for="funcion in funciones">
+              <movie-row :funcion="funcion" />
+            </div>
+          </div>
+        </div>
+        <div class="row clearfix">
+          <div class="col-12">
+            <nav v-if="total_paginas > 0">
+              <ul class="pagination justify-content-center">
+                <li class="page-item" :class="{'disabled': pagina == 0}" @click="pagAnterior">
+                  <a class="page-link">&laquo;</a>
+                </li>
+                <li class="page-item" :class="{'active': (p-1) == pagina }" v-for="p in total_paginas" @click="pagIr(p-1)">
+                  <a class="page-link">{{ p }}</a>
+                </li>
+                <li class="page-item" :class="{'disabled': pagina == total_paginas-1}" @click="pagSiguiente">
+                  <a class="page-link">&raquo;</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/vue.js"></script>
+    <script src="assets/js/vue-router.js"></script>
+    <script src="assets/js/luxon.min.js"></script>
+    <script src="assets/js/axios.min.js"></script>
+    <!-- XX -->
+    <script src="js/constants.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/movie-row.js"></script>
+    <script src="js/item.js"></script>
+    <script src="js/view-index.js"></script>
+    <script src="js/view-mapa.js"></script>
+    
+    <script src="app.js"></script>
+  </body>
+</html>

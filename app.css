@@ -1,0 +1,65 @@
+.seat-fixed{
+  width: 30px;
+}
+.seat{
+  line-height: 1.2em;
+  font-size: 12px;
+  text-align: center;
+}
+
+.text-white{
+  color: white;
+  fill: white;
+  color: white;
+}
+
+.cursor-pointer{
+  cursor: pointer;
+}
+
+.seat.seat-pasillo{
+  background: transparent;
+  border: none !important
+}
+
+.seat.seat-ocupado{
+}
+
+.seat.seat-no-disponible{
+  background: transparent;
+  border: none !important
+}
+
+.seat.seat-seleccionado{
+  
+}
+
+.no-select::-moz-selection, .no-select *::-moz-selection {
+    background: none !important;
+}
+.no-select::selection, .no-select *::selection {
+    background: none !important;
+}
+.no-select {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;    
+}
+
+.cinema-screen{
+  width: 360px;
+}
+.cinema-screen:before{
+  content: ' ';
+  border-top: 48px solid #6c757d;
+  border-left: 48px solid transparent;
+  float: left;
+}
+.cinema-screen:after{
+  content: ' ';
+  border-top: 48px solid #6c757d;
+  border-right: 48px solid transparent;
+  float: right;
+}
