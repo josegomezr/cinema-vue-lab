@@ -35,6 +35,11 @@
           row_fecha = DateTime.fromISO(row_fecha);
           var diff = row_fecha - now;
           var diff = diff / (1000*60);
+
+          // cambiar -60 por la diferencia en minutos
+          // -60 = 1h luego de presentado
+          //   0 = 0 minutos de presentado
+          //  60 = 1h antes de presentar.
           return diff > -60;
         })
       },

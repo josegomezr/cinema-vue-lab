@@ -209,17 +209,6 @@
           Cargando...
         </div>
         <div v-else class="row clearfix pt-4 pb-2">
-          <div class="col-12 col-sm-auto border-right">
-            <div class="input-group mb-2 mr-sm-2">
-              <input type="search" name="search" class="form-control" placeholder="Buscar...">
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary" @click="buscar" type="button">
-                  B
-                </button>
-              </div>
-            </div>
-
-          </div>
           <div class="col-12 col-sm">
             <div v-for="funcion in funciones">
               <movie-row :funcion="funcion" />
@@ -255,6 +244,7 @@
     <script src="assets/js/luxon.min.js"></script>
     <script src="assets/js/axios.min.js"></script>
     <!-- XX -->
+    <script src="js/polyfill.js"></script>
     <script src="js/constants.js"></script>
     <script src="js/filters.js"></script>
     <script src="js/movie-row.js"></script>

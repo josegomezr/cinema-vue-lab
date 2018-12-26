@@ -8,6 +8,27 @@
       var url = window.SALA_URL(fid);
       
       axios.get(url, window.AXIOS_CFG()).then(function(response){
+        response.data.mapa = response.data.mapa.map(function(e){
+          var coord = Object.keys(e).filter(function(e){
+            return e != 'nombre_real'
+          })[0];
+          
+          e.tipo = e[coord];
+          e.nombre_mostrar = e.nombre_real;
+
+          if(e.nombre_real.length == 2){
+            var arr = e.nombre_real.split('')
+            arr.splice(-1, 0, '0')
+            e.nombre_mostrar = arr.join('')
+          }
+            
+          e.coord = coord;
+          e.columna = coord.substring(0, 1);
+          e.fila = coord.substring(1);
+          e.fila_mostrar = e.nombre_mostrar.substr(1);
+          e.fila_mostrar = e.fila_mostrar.length == 1 ? ('0' + e.fila_mostrar) : e.fila_mostrar;
+          return e;
+        })
         self.sala = response.data;
       });
 
@@ -71,35 +92,10 @@
         var self = this;
         
         var hash = {};
-        var ocupados = self.ocupados;
 
         (this.sala.mapa || []).forEach(function(e){
-          var key;
-          for (var i in e) {
-            if(e.hasOwnProperty(i) && i != 'nombre_real'){
-              key = i;
-              break;
-            }
-          }
-          e.tipo = e[key];
-
-          var columna = e.nombre_real.substr(0, 1);
-          var fila = e.nombre_real.substr(1);
-          var fila_pad = ('00' + fila).substr(-2);
-          
-          e.ocupado = false;
-
-          if(ocupados[e.nombre_real]){
-            e.ocupado = ocupados[e.nombre_real];
-          }
-          e.columna = columna;
-          e.fila = fila;
-
-          e.fila_pad = fila_pad;
-          e.nombre_mostrar = columna + fila_pad;
-
-          hash[columna] = hash[columna] || {};
-          hash[columna][fila] = e;
+          hash[e.columna] = hash[e.columna] || {};
+          hash[e.columna][e.fila] = e;
         });
 
         return hash;
@@ -109,36 +105,28 @@
           return {};
 
         var obj = (this.sala.mapa || []).map(function(e){
-          return e.nombre_real.substr(0, 1)
+          return e.columna
         }).reduce(function(c, n){ c[n] = true ;return c }, {});
 
-        var keys = [];
-
-        for ( var i in obj ){
-          if(obj.hasOwnProperty(i) && obj[i] === true){
-            keys.push(i);
-          }
-        }
-
-        return keys.reverse()
+        return Object.keys(obj).sort().reverse()
       },
       filas: function(){
         if(!this.sala)
           return {};
 
         var obj = (this.sala.mapa || []).map(function(e){
-          return e.nombre_real.substr(1)
+          return e.fila
         }).reduce(function(c, n){ c[n] = true ;return c }, {});
 
-        var keys = [];
-
-        for ( var i in obj ){
-          if(obj.hasOwnProperty(i) && obj[i] === true){
-            keys.push(i);
-          }
-        }
-
-        return keys.reverse()
+        return Object.keys(obj)
+          .map(function(e){ 
+            return parseFloat(e) 
+          })
+          .sort(function(a, b) {
+            return a - b
+          }).map(function(e){
+            return ''+e
+          }).reverse()
       }
     },
     data: function(){
