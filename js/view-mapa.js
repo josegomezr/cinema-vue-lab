@@ -48,8 +48,8 @@
       toggle: function(cell){
         this.$set(
           this.seleccionados, 
-          cell.nombre_real, 
-          !(this.seleccionados[cell.nombre_real] || false)
+          cell.coord, 
+          !(this.seleccionados[cell.coord] || false)
         )
       },
       updateSelected: function(){
